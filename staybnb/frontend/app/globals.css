@@ -124,3 +124,88 @@
     display: none;
   }
 }
+/* Staybnb mobile layout improvements — append to app/globals.css */
+@media (max-width: 760px) {
+  /* Search: destination, dates, guests, then an easy-to-tap Search button */
+  .homeSearchOuter { padding: 14px 14px 18px; }
+  .hsOuter { width: 100%; max-width: 100%; }
+  .hsBar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0;
+    min-height: 0;
+    padding: 8px;
+    border-radius: 22px;
+    align-items: stretch;
+  }
+  .hsBar > .hsField { min-width: 0; width: 100%; height: auto; min-height: 58px; padding: 10px 13px; border-radius: 12px; }
+  .hsBar > .hsWhere { grid-column: 1 / -1; grid-row: 1; border-right: 0; border-bottom: 1px solid #eee; }
+  .hsBar > .hsClick:nth-child(2) { grid-column: 1; grid-row: 2; border-right: 1px solid #eee; border-bottom: 1px solid #eee; }
+  .hsBar > .hsClick:nth-child(3) { grid-column: 2; grid-row: 2; border-right: 0; border-bottom: 1px solid #eee; }
+  .hsBar > .hsWho { grid-column: 1; grid-row: 3; border-right: 0; }
+  .hsBar > .hsSubmit {
+    grid-column: 2; grid-row: 3;
+    align-self: center; justify-self: stretch;
+    height: 46px; width: auto; margin: 4px 5px;
+    border-radius: 28px; padding: 0 12px;
+    font-size: 14px;
+  }
+  .hsBar > .hsSubmit span { display: inline; }
+  .hsField input, .hsField span { font-size: 13px; }
+  .hsWhere input { text-overflow: ellipsis; }
+  .hsPopover { box-sizing: border-box; max-width: calc(100vw - 28px); }
+  .hsLocationPanel, .hsGuestPanel { left: 0; right: auto; width: 100%; }
+  .hsCalendarPanel { width: 100%; left: 0; transform: none; }
+  .hsDays { gap: 1px; }
+  .hsDay { min-height: 36px; }
+
+  /* Categories remain horizontally scrollable; the filter button doesn't overlap */
+  .homeFilterBar { min-width: 0; gap: 10px; }
+  .homeCategoryScroll { min-width: 0; flex: 1 1 auto; gap: 20px; }
+  .homeFiltersButton { flex: 0 0 auto; padding: 11px 13px; }
+
+  /* Keep the listing grid legible on phones */
+  .homePage .cardsGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 12px; }
+  .homePage .cardTop { flex-wrap: wrap; gap: 3px; align-items: baseline; }
+  .homePage .cardDetail, .homePage .cardDetail .muted { font-size: 12px; line-height: 1.45; }
+  .homeResultsHeading h1 { font-size: 20px; line-height: 1.25; }
+
+  /* Host forms: fixed-height modal with its own scrolling body */
+  .overlay { padding: 12px; align-items: center; }
+  .hostModal {
+    width: 100%; max-width: 100%;
+    max-height: calc(100dvh - 24px);
+    display: flex; flex-direction: column;
+    overflow: hidden; border-radius: 20px;
+  }
+  .hostModal .modalHead { flex: 0 0 auto; margin: 0; padding: 18px 20px; }
+  .hostModal .modalHead h2 { font-size: 21px; }
+  .hostModal .hostForm {
+    min-height: 0; flex: 1 1 auto;
+    max-height: none; overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px;
+  }
+  .hostModal .modalBottom {
+    flex: 0 0 auto; background: #fff;
+    border-top: 1px solid #eee;
+    padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
+    gap: 12px;
+  }
+  .hostModal .modalBottom .primary { white-space: nowrap; }
+  .hostForm .formRow { flex-wrap: wrap; gap: 12px; }
+  .hostForm .formRow > label { min-width: 130px; }
+  .hostForm .thirds > label { flex: 1 1 calc(50% - 12px); }
+  .hostForm input, .hostForm select, .hostForm textarea { max-width: 100%; font-size: 16px; }
+}
+
+@media (max-width: 480px) {
+  .homePage .cardsGrid { grid-template-columns: minmax(0, 1fr); gap: 25px; }
+  .homePage .photoWrap { aspect-ratio: 1 / .95; }
+  .homePage .cardDetail, .homePage .cardDetail .muted { font-size: 14px; }
+  .homePage .cardTop { flex-direction: row; justify-content: space-between; }
+  .homePage .cardTop span { font-size: 13px; }
+  .homeContent { padding-left: 16px; padding-right: 16px; }
+  .hostModal .modalBottom button { min-height: 44px; }
+}
