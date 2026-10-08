@@ -1,37 +1,29 @@
-
-# Node.js
-node_modules/
-.next/
-out/
-dist/
-*.tsbuildinfo
-
-# Environment variables
-.env
-.env.*
-!.env.example
-
-# Python
+# Virtual environments and Python artifacts
 .venv/
 venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
-
-# SQLite databases
+# Node and Next.js
+node_modules/
+.next/
+out/
+dist/
+*.tsbuildinfo
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+# SQLite files
 *.db
-*.sqlite
-*.sqlite3
 *.db-journal
 *.db-wal
 *.db-shm
-
-# Editor and operating system
-.vscode/
-.idea/
+*.sqlite
+*.sqlite3
+# Logs and OS
+*.log
 .DS_Store
 Thumbs.db
-
-# Logs
-*.log
-npm-debug.log*
+.vscode/
+.idea/
