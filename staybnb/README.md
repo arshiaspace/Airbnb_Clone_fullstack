@@ -1,105 +1,167 @@
-# Staybnb — Airbnb-inspired full-stack marketplace
+# Staybnb — Airbnb-inspired full-stack booking application
 
-An independently implemented, Airbnb-inspired educational demo with browsable property listings, live filters, persistent SQLite bookings, guest wishlist, checkout and host listing management. Not affiliated with Airbnb. Payment and user identities are mocked. UI pricing is in **USD**.
+**Live demo:** https://staybnb-airbnb-clone.vercel.app/  
+**API documentation:** https://arshiaspace.pythonanywhere.com/docs  
+**Source:** https://github.com/arshiaspace/Airbnb_Clone_fullstack
+
+Staybnb is an independently built educational accommodation-booking marketplace inspired by Airbnb's browsing and reservation experience. It supports browsing and filtering properties, viewing listing details, selecting dates, mock checkout, persistent reservations, wishlists, and host listing management. This is a demonstration project, **not affiliated with Airbnb**.
 
 ## Tech stack
-- **Frontend:** Next.js App Router, React, TypeScript, lucide-react, plain responsive CSS.
-- **Backend:** Python FastAPI, Pydantic validation, SQLAlchemy ORM.
-- **Database:** SQLite (foreign keys enabled, WAL mode); automatically generated and seeded on first API startup.
-- **Images:** Hotlinked public Unsplash images (internet connection required).
+
+| Layer | Implementation |
+| --- | --- |
+| Frontend | Next.js 15 App Router, React 19, TypeScript, lucide-react, CSS |
+| Backend | Python, FastAPI, Pydantic, SQLAlchemy ORM |
+| Database | SQLite (foreign keys, WAL mode) |
+| Frontend hosting | Vercel |
+| Backend hosting | PythonAnywhere (experimental ASGI hosting) |
+| Images | Public external Unsplash URLs; URL-based host photo input |
+
+## Key features
+
+- Property grid, destination search, category filters, price and amenity filters, guest capacity and availability search, pagination.
+- Interactive home search: destination suggestions, two-month date-range picker, adult/child guest counters.
+- Listing galleries, amenities, host details, reviews, date availability, 12% service-fee price breakdown.
+- Bookings: validate check-in and checkout, prevent overlaps, confirm a mocked checkout and show persistent trips.
+- Host dashboard: create/edit/delete owned listings, view reservations and statistics.
+- Demo users (Alex guest; Sofia and Jamie hosts), favorites/wishlists and toast notifications.
+- Responsive desktop and mobile layouts.
+
+## Repository layout
+
+The GitHub repository has an outer `staybnb/` directory:
+
+```text
+Airbnb_Clone_fullstack/
+  .gitignore
+  README.md                  # this document (recommended location)
+  staybnb/
+    frontend/
+      app/                   # Home, listing detail, checkout, trips, host
+      components/            # Header, HomeSearch, AvailabilityCalendar, ListingCard, Providers
+      lib/api.ts             # Typed API client
+      .env.example
+      package.json
+    backend/
+      main.py                # ORM models, Pydantic schemas, API, seed logic
+      requirements.txt
+    render.yaml              # Optional alternative hosting blueprint
+```
 
 ## Run locally
 
-Requirements: Node.js 20+, Python 3.10+.
+**Prerequisites:** Node.js 20+, Python 3.10+, Git.
 
-### Terminal 1 — API
-```bash
-cd backend
+In terminal 1, from the repository root:
+
+```powershell
+cd staybnb/backend
 python -m venv .venv
-# Windows: .venv\\Scripts\\activate
-# macOS/Linux: source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
+.\.venv\Scripts\Activate.ps1   # Windows PowerShell
+python -m pip install -r requirements.txt
+python -m uvicorn main:app --reload
 ```
-Open http://localhost:8000/docs for interactive Swagger API documentation. SQLite file is created at `backend/staybnb.db`.
 
-### Terminal 2 — web app
-```bash
-cd frontend
+On macOS/Linux, activate with `source .venv/bin/activate`. API Swagger docs: http://127.0.0.1:8000/docs.
+
+In terminal 2, from the repository root:
+
+```powershell
+cd staybnb/frontend
 npm install
-cp .env.example .env.local
+Copy-Item .env.example .env.local
 npm run dev
 ```
-On Windows PowerShell: `Copy-Item .env.example .env.local`.
-Open http://localhost:3000. The app connects to `http://localhost:8000` unless changed in `.env.local`.
 
-## Demo user model
-Top-right avatar menu switches between **Alex (guest, user 1)**, **Sofia (host, user 2)**, and **Jamie (host, user 3)**. The choice is saved in localStorage. There is NO real authentication: the `user_id` query parameter is intentionally trusted for this assignment demo; never use this authorization strategy in production.
+For macOS/Linux use `cp .env.example .env.local`. In `.env.local` set:
 
-## Supported journeys
-1. Explore 16 seeded stays; search by city/title/country, filter by category, price, amenity, guest count, available dates, and paginate.
-2. Open a listing to see photo gallery, host, reviews, amenities, booked dates, and price summary.
-3. Choose dates and guests, continue to mock checkout, confirm reservation, and view persistent booking in **Trips**. Existing reservations exclude overlapping intervals (`existing.check_in < requested.check_out AND existing.check_out > requested.check_in`); consecutive back-to-back stays remain valid. Seeded reservations on listings 1, 3, and 6 demonstrate unavailable dates.
-4. Switch to Sofia/Jamie, create a property with URLs, edit or delete owned listings, and see bookings on the hosting dashboard.
-5. Save/unsave favorites using the heart icons; use the Wishlists tab (favorites on currently loaded page).
-
-## Architecture
-```
-frontend/
-  app/                     Next.js routes: home, listings/[id], checkout/[id], trips, host
-  components/              Header, ListingCard, Providers (demo user, favorites, toasts)
-  lib/api.ts                Typed HTTP client and formatting utilities
-backend/
-  main.py                   SQLAlchemy models, Pydantic contracts, seeding, routes
-  requirements.txt
-render.yaml                 Render persistent disk deployment blueprint
+```dotenv
+NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
 ```
 
-## SQLite database schema
-- `users(id PK, name, avatar)`
-- `listings(id PK, host_id FK→users, title, description, location, country, category, price, max_guests, bedrooms, beds, baths, photos_json, amenities_json, rating)`
-- `bookings(id PK, listing_id FK→listings ON DELETE CASCADE, guest_id FK→users, check_in, check_out, guests, total, status, created_at)`
-- `reviews(id PK, listing_id FK→listings ON DELETE CASCADE, author, body, rating)`
-- `favorites(user_id FK→users, listing_id FK→listings, composite PK)`
+Open http://localhost:3000. If using a different local backend origin, set `CORS_ORIGINS` accordingly. Local SQLite defaults to `staybnb/backend/staybnb.db` when running from the backend directory; it is created automatically on the first API startup and should not be committed.
 
-Listings/booking/user data persist across server restarts. Deleting a listing cascades and deletes its bookings and reviews; UI shows a confirmation. This is acceptable for a demo; production systems should archive listings/bookings instead. `photos_json`/`amenities_json` are simplified serialized lists rather than normalized image/amenity tables. SQLite `BEGIN IMMEDIATE` serializes booking writes so concurrent booking attempts cannot both succeed. For PostgreSQL production usage, use row locks or dedicated exclusion constraints.
+## Database design
 
-## API endpoints
-| Method | Path | Purpose |
-|---|---|---|
-| GET | `/api/health` | Health check |
-| GET | `/api/users` | Demo accounts |
-| GET | `/api/listings` | Filter & paginate (`q`, `category`, `min_price`, `max_price`, `guests`, `check_in`, `check_out`, `amenities`, `page`, `limit`) |
-| GET | `/api/listings/{id}` | Listing + blocked intervals + reviews |
-| POST | `/api/listings?user_id=2` | Create as host |
-| PUT | `/api/listings/{id}?user_id=2` | Update as owner |
-| DELETE | `/api/listings/{id}?user_id=2` | Delete as owner |
-| POST | `/api/bookings?user_id=1` | Validate and reserve |
-| GET | `/api/bookings?user_id=1` | Guest trips |
-| GET | `/api/host/dashboard?user_id=2` | Listings and incoming bookings |
-| GET | `/api/favorites?user_id=1` | Favorite IDs |
-| POST | `/api/favorites/{id}?user_id=1` | Toggle favorite |
+SQLAlchemy creates the following SQLite tables at startup:
 
-## Deployment
-1. Push the `staybnb` folder as a new **public** repository on GitHub. Do not commit `.env.local`, SQLite files, or `.venv`.
-2. Deploy the API on Render using `render.yaml`; provision a **persistent disk** and set `CORS_ORIGINS=https://YOUR-VERCEL-APP.vercel.app`. Render persistent disk availability depends on plan. Do not use ephemeral SQLite in hosted environments if bookings must survive redeploys.
-3. Import GitHub repository in Vercel; set **Root Directory** `frontend` and environment variable `NEXT_PUBLIC_API_URL=https://YOUR-RENDER-API.onrender.com` (no trailing slash). Deploy.
-4. Update the API's `CORS_ORIGINS` with the deployed Vercel URL, redeploy API, and confirm guest-to-booking flow.
-5. Test both frontend/backend URLs before submission. These services are *not* deployed automatically by this zip.
+| Table | Main fields and relationships |
+| --- | --- |
+| `users` | `id` PK, `name`, `avatar` |
+| `listings` | `id` PK, `host_id` FK → users; title, description, location, country, category, price, occupancy, bedroom/bed/bath counts, photos_json, amenities_json, rating |
+| `bookings` | `id` PK, `listing_id` FK → listings, `guest_id` FK → users, check_in, check_out, guests, total, status, created_at |
+| `reviews` | `id` PK, `listing_id` FK → listings, author, body, rating |
+| `favorites` | composite PK `(user_id, listing_id)`, both foreign keys |
 
-## Constraints and assumptions
-- Payments, messaging, login and geolocation are mocked. No actual payment data is stored.
-- Check-in date is inclusive and check-out exclusive; service fee is a flat 12% of subtotal; no separate taxes.
-- The app provides a date-range experience using two native date inputs rather than a custom visual calendar; booked dates are enforced by the backend and conflicts are shown to guests.
-- Photo input supports image URLs, not binary uploads. Category tabs and responsive layout mirror familiar accommodation marketplace patterns without copying any external repository.
-- For a production implementation, replace trusted query-string user IDs with authenticated sessions, add migrations and tests, upload images to storage, and use a managed DB.
+A listing belongs to a host; a booking references a listing and guest. Deleting a listing cascades to its bookings and reviews in this demo. Image URLs and amenities are stored as serialized JSON arrays for simplicity. Schema migrations are not implemented; the project initializes tables via SQLAlchemy `create_all`.
 
-## Useful commands
+### Booking consistency
+
+Dates follow the half-open interval `[check_in, check_out)`: guests may check in on a prior guest's checkout date. Two bookings overlap when:
+
+```text
+existing.check_in < new.check_out AND existing.check_out > new.check_in
+```
+
+Booking creation validates dates and capacity and uses SQLite `BEGIN IMMEDIATE` to serialize writes before checking overlap and committing. The backend is the final authority for availability, even if the UI showed an earlier available date. Pricing uses nightly subtotal + 12% service fee; real payments and taxes are out of scope.
+
+## API overview
+
+Interactive contract and request/response schemas: [Swagger UI](https://arshiaspace.pythonanywhere.com/docs).
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| GET | `/api/health` | API health check |
+| GET | `/api/users` | Available demo users |
+| GET | `/api/listings` | Filtered/paginated listings; parameters include `q`, `category`, `min_price`, `max_price`, `guests`, `check_in`, `check_out`, `amenities`, `page`, `limit` |
+| GET | `/api/listings/{listing_id}` | Details, reviews, booked dates |
+| POST | `/api/listings?user_id=2` | Create host listing |
+| PUT | `/api/listings/{listing_id}?user_id=2` | Update owned listing |
+| DELETE | `/api/listings/{listing_id}?user_id=2` | Delete owned listing |
+| POST | `/api/bookings?user_id=1` | Create a reservation |
+| GET | `/api/bookings?user_id=1` | Guest's trips |
+| GET | `/api/host/dashboard?user_id=2` | Host listings and reservations |
+| GET | `/api/favorites?user_id=1` | Favorite listing IDs |
+| POST | `/api/favorites/{listing_id}?user_id=1` | Toggle a favorite |
+
+## Deployment (current live setup)
+
+**Frontend — Vercel**
+1. Import `arshiaspace/Airbnb_Clone_fullstack`.
+2. Set **Root Directory** to `staybnb/frontend` and Framework to Next.js.
+3. Set build-time environment variable `NEXT_PUBLIC_API_URL=https://arshiaspace.pythonanywhere.com`.
+4. Deploy; any change to this public variable needs a fresh frontend build.
+
+**Backend — PythonAnywhere**
+1. Clone the GitHub repository and install `staybnb/backend/requirements.txt` into a virtual environment.
+2. Use PythonAnywhere's experimental ASGI hosting with Uvicorn bound to `${DOMAIN_SOCKET}`.
+3. Configure a SQLite file outside the repository, for example:
+   `DATABASE_URL=sqlite:////home/arshiaspace/staybnb-data/staybnb.db`.
+4. Set `CORS_ORIGINS=https://staybnb-airbnb-clone.vercel.app,http://localhost:3000,http://127.0.0.1:3000` in the app startup environment.
+5. Reload the PythonAnywhere website, then verify `/api/health` and `/api/listings`.
+
+The free PythonAnywhere plan has resource and availability limits; the application is intended as an assignment demo, not a production service. The SQLite database is in persistent account file storage, not an ephemeral container directory. Test persistence after reloads. API source changes require pulling the repository updates on PythonAnywhere and reloading the site.
+
+## Demo accounts and limitations
+
+The avatar menu switches among Alex (guest ID 1), Sofia (host ID 2) and Jamie (host ID 3). Identity is **mocked**: APIs trust the `user_id` query parameter. **This is not secure authentication or authorization for a real public marketplace.** Other mock features include payment, messaging, location-map preview and identity checks. Photo uploads currently use URLs rather than binary storage. Favorite listing display may be limited to the current paginated result set. Display prices are in USD irrespective of the property's location.
+
+## Verification and quality
+
 ```bash
-# Frontend static type-check
-cd frontend && npm run lint
-# Build
-cd frontend && npm run build
-# Quick backend syntax check
-cd backend && python -m py_compile main.py
+# Frontend (from staybnb/frontend)
+npm run lint        # TypeScript type check (script runs tsc --noEmit)
+npm run build       # Next.js production compilation
+npm audit           # Dependency advisories
+
+# Backend (from staybnb/backend, virtualenv active)
+python -m pip check
+python -m py_compile main.py
 ```
+
+Functional testing should cover search/filter, date constraints, booking persistence after refresh and service restart, overlap rejection, guest/host views and host create/edit/delete. The frontend was tested with a successful local production build; no automated end-to-end suite is included.
+
+## Future improvements
+
+Authenticated user accounts and authorization, normalized photos/amenities, Alembic migrations, automated integration/e2e tests, a managed transactional database for higher concurrency, binary image uploads and polished maps/reviews.
+
