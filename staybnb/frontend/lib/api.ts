@@ -1,0 +1,7 @@
+export const API=process.env.NEXT_PUBLIC_API_URL||'http://localhost:8000';
+export type Listing={id:number;host_id:number;title:string;description:string;location:string;country:string;category:string;price:number;max_guests:number;bedrooms:number;beds:number;baths:number;photos:string[];amenities:string[];rating:number;host:{id:number;name:string;avatar:string};booked_dates?:{check_in:string;check_out:string}[];reviews?:{id:number;author:string;body:string;rating:number}[]};
+export type Booking={id:number;listing_id:number;guest_id:number;check_in:string;check_out:string;guests:number;total:number;status:string;listing:Listing};
+export async function api<T>(path:string,options?:RequestInit):Promise<T>{const response=await fetch(`${API}${path}`,{...options,headers:{'Content-Type':'application/json',...options?.headers},cache:'no-store'});if(!response.ok){const error=await response.json().catch(()=>({detail:'Something went wrong'}));throw new Error(typeof error.detail==='string'?error.detail:Array.isArray(error.detail)?error.detail.map((x:{msg:string})=>x.msg).join(', '):'Request failed')}return response.json()}
+export const money=(n:number)=>`$${Number(n).toLocaleString('en-US',{maximumFractionDigits:0})}`;
+export const dateText=(iso:string)=>new Date(`${iso}T12:00:00`).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+export const nights=(a:string,b:string)=>Math.round((new Date(`${b}T12:00:00`).getTime()-new Date(`${a}T12:00:00`).getTime())/86400000);
